@@ -1,8 +1,9 @@
 package com.shopFlow.product_service.controller;
 
-import com.shopFlow.product_service.entity.Product;
-import com.shopFlow.product_service.repository.ProductRepository;
+import com.shopFlow.product_service.dto.ProductRequest;
+import com.shopFlow.product_service.dto.ProductResponse;
 import com.shopFlow.product_service.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,25 +22,25 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> addProduct(@RequestBody  Product product)
+    public ResponseEntity<ProductResponse> addProduct(@Valid @RequestBody  ProductRequest product)
     {
-        Product created = productService.create(product);
+        ProductResponse created = productService.create(product);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts()
+    public ResponseEntity<List<ProductResponse>> getAllProducts()
     {
-        List<Product>products =  productService.getAllProducts();
+        List<ProductResponse>products =  productService.getAllProducts();
 
         return  ResponseEntity.status(HttpStatus.OK).body(products);
 
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
 
-        Product fetch= productService.getProductById(id);
+        ProductResponse fetch= productService.getProductById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(fetch);
     }
