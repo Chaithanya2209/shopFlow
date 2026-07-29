@@ -3,6 +3,7 @@ package com.shopFlow.product_service.service;
 import com.shopFlow.product_service.dto.ProductRequest;
 import com.shopFlow.product_service.dto.ProductResponse;
 import com.shopFlow.product_service.entity.Product;
+import com.shopFlow.product_service.exception.ProductNotFoundException;
 import com.shopFlow.product_service.mapper.ProductMapper;
 import com.shopFlow.product_service.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -46,13 +47,17 @@ public class ProductService {
 
     public  ProductResponse getProductById(Long id)
     {
-        Product product= productRepository.findById(id).orElseThrow(()->new RuntimeException("Product not found with id ; "+id));
+        Product product= productRepository.findById(id).orElseThrow(()->new ProductNotFoundException("Product not found with id ; "+id));
 
         return productMapper.toResponse(product);
     }
 
     public void deleteProduct(Long id)
     {
+        if(!productRepository.existsById(id))
+        {
+          throw new ProductNotFoundException("Product not found with id ; "+id);
+        }
         productRepository.deleteById(id);
     }
 
