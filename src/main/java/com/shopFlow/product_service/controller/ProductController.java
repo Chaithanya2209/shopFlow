@@ -1,9 +1,12 @@
 package com.shopFlow.product_service.controller;
 
+import com.shopFlow.product_service.dto.PagedResponse;
 import com.shopFlow.product_service.dto.ProductRequest;
 import com.shopFlow.product_service.dto.ProductResponse;
 import com.shopFlow.product_service.service.ProductService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,10 +31,19 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @GetMapping
-    public ResponseEntity<List<ProductResponse>> getAllProducts()
+    @PostMapping("/bulk")
+    public ResponseEntity<List<ProductResponse>> addProductBulk(@Valid @RequestBody  List<ProductRequest> product)
     {
-        List<ProductResponse>products =  productService.getAllProducts();
+        List<ProductResponse> created = productService.createBulk(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+
+    @GetMapping
+    public ResponseEntity<PagedResponse<ProductResponse>> getAllProducts(@RequestParam(defaultValue = "0") int page , @RequestParam(defaultValue = "10") int size)
+    {
+        Pageable  pageable= PageRequest.of(page, size);
+        PagedResponse<ProductResponse>products =  productService.getAllProducts(pageable);
 
         return  ResponseEntity.status(HttpStatus.OK).body(products);
 
