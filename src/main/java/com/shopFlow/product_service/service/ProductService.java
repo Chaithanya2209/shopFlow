@@ -82,4 +82,18 @@ public class ProductService {
     }
 
 
+    public  ProductResponse update(long id,  ProductRequest productRequest)
+    {
+      Product product= productRepository.findById(id).orElseThrow(()->new ProductNotFoundException("Product not found with id ; "+id));
+
+
+       product.setName(productRequest.getName());
+       product.setPrice(productRequest.getPrice());
+       product.setDescription(productRequest.getDescription());
+       product.setSku(productRequest.getSku());
+       product.setStockQuantity(productRequest.getStockQuantity());
+
+       return productMapper.toResponse(productRepository.save(product));
+    }
+
 }
