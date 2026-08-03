@@ -1,11 +1,14 @@
 package com.shopFlow.user_service.controller;
 
 
+import com.shopFlow.user_service.dto.PagedResponse;
 import com.shopFlow.user_service.dto.UserRequest;
 import com.shopFlow.user_service.dto.UserResponse;
 import com.shopFlow.user_service.service.UserService;
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,21 +33,16 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-//    @PostMapping("/bulk")
-//    public ResponseEntity<List<UserResponse>> addProductBulk(@Valid @RequestBody  List<ProductRequest> product)
-//    {
-//        List<ProductResponse> created = productService.createBulk(product);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-//    }
+
 
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers()
+    public ResponseEntity<PagedResponse<UserResponse>> getAllProducts(@RequestParam(defaultValue = "0") int page , @RequestParam(defaultValue = "10") int size)
     {
+        Pageable pageable= PageRequest.of(page, size);
+        PagedResponse<UserResponse>products =  userService.getAllUsers(pageable);
 
-        List<UserResponse> users=  userService.getAllUsers();
-
-        return  ResponseEntity.status(HttpStatus.OK).body(users);
+        return  ResponseEntity.status(HttpStatus.OK).body(products);
 
     }
 
@@ -64,13 +62,13 @@ public class UserController {
 
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody  ProductRequest productRequest)
-//    {
-//        ProductResponse productResponse= productService.update(id, productRequest);
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(productResponse);
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @Valid @RequestBody  UserRequest userRequest)
+    {
+        UserResponse userResponse= userService.updateUser(id, userRequest);
+
+        return ResponseEntity.status(HttpStatus.OK).body(userResponse);
+    }
 
 
 

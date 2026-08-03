@@ -1,5 +1,6 @@
 package com.shopFlow.user_service.service;
 
+import com.shopFlow.user_service.dto.PagedResponse;
 import com.shopFlow.user_service.dto.UserRequest;
 import com.shopFlow.user_service.dto.UserResponse;
 import com.shopFlow.user_service.entity.User;
@@ -7,6 +8,9 @@ import com.shopFlow.user_service.exception.DuplicateEmailException;
 import com.shopFlow.user_service.exception.UserNotFoundException;
 import com.shopFlow.user_service.mapper.UserMapper;
 import com.shopFlow.user_service.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,12 +21,13 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
-
+    private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
-   public  UserService(UserRepository userRepository, UserMapper userMapper) {
+   public  UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder=passwordEncoder;
     }
 
     public UserResponse create(UserRequest userRequest) {
@@ -51,14 +56,37 @@ public class UserService {
         return userMapper.toResponse(user.get());
     }
 
-    public List<UserResponse> getAllUsers() {
-        List<User> userList = userRepository.findAll();
+    public UserResponse updateUser(Long id, UserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
 
-        List<UserResponse> userResponses = userList.stream()
+        if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException("Email already exists");
+        }
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+
+        User updated = userRepository.save(user);
+        return userMapper.toResponse(updated);
+    }
+    public PagedResponse<UserResponse> getAllUsers(Pageable pageable) {
+        Page<User> userPage = userRepository.findAll(pageable);
+
+        List<UserResponse> content = userPage.getContent().stream()
                 .map(userMapper::toResponse)
                 .collect(Collectors.toList());
 
-        return userResponses;
+        return new PagedResponse<>(
+                content,
+                userPage.getNumber(),
+                userPage.getSize(),
+                userPage.getTotalElements(),
+                userPage.getTotalPages(),
+                userPage.isLast()
+        );
     }
 
     public void deleteUser(Long id) {
